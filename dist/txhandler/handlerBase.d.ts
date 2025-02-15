@@ -14,3 +14,4 @@ export declare class BaseAisaTxHandler {
     private loadWallet;
     sendAndConfirmTransaction(instructions: TransactionInstruction[], payerKey: PublicKey, signers: Signer[], lookupTableAccounts?: AddressLookupTableAccount[]): Promise<string | undefined>;
 }
+//# sourceMappingURL=handlerBase.d.ts.map

@@ -1,3 +1,9 @@
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/aisa_contracts.json`.
+ */
 export type AisaContracts = {
     address: "G34e7zJuRne2pfDHh9YayixM2rJFdwV624NUzbj9FRR5";
     metadata: {
@@ -772,3 +778,4 @@ export type AisaContracts = {
         }
     ];
 };
+//# sourceMappingURL=aisa_types.d.ts.map

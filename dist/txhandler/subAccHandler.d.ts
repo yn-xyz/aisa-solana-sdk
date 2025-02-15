@@ -12,5 +12,7 @@ export declare class SubAccountTxHandler extends BaseAisaTxHandler {
         maxPerPayment: anchor.BN,
         lastPaymentTimestamp: anchor.BN
     ]>;
-    paymentRequest(uuid: number[], payee: PublicKey, paymentAmount: anchor.BN, tokenMint: PublicKey, payeeTokenAccount?: PublicKey, tokenProgram?: PublicKey): Promise<String | undefined>;
+    paymentRequest(uuid: number[], payee: PublicKey, paymentAmount: anchor.BN, tokenMint: PublicKey, payeeTokenAccount?: PublicKey, //default to ATA derivation
+    tokenProgram?: PublicKey): Promise<String | undefined>;
 }
+//# sourceMappingURL=subAccHandler.d.ts.map
