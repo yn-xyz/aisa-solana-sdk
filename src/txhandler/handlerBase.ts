@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { AisaContracts } from "..//utils/aisa_types";
+import { AisaContracts } from "../utils/aisa_types";
 import {
   AddressLookupTableAccount,
   Connection,
@@ -15,12 +15,11 @@ import * as dotenv from "dotenv";
 const idlPath = "./utils/aisa_contracts.json";
 
 export class BaseAisaTxHandler {
-  public program: anchor.Program<AisaContracts>;
-  public provider: anchor.Provider;
-  public connection: Connection;
-  public signer: Keypair; // can be user or agent
-  public wallet: anchor.Wallet; //can be user or agent
-
+  public program!: anchor.Program<AisaContracts>; // Use definite assignment assertion
+  public provider!: anchor.Provider;
+  public connection!: Connection;
+  public signer!: Keypair; // can be user or agent
+  public wallet!: anchor.Wallet; // can be user or agent
   protected constructor() {}
 
   //to be called by the user or agent
@@ -63,7 +62,7 @@ export class BaseAisaTxHandler {
         commitment: "processed",
       });
       return connection;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to create RPC connection: ${error.message}`);
     }
   }
@@ -84,7 +83,7 @@ export class BaseAisaTxHandler {
 
       const keypair = Keypair.fromSecretKey(privateKey);
       return new anchor.Wallet(keypair);
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Invalid private key format : ${error.message}`);
     }
   }
@@ -93,8 +92,8 @@ export class BaseAisaTxHandler {
     instructions: TransactionInstruction[],
     payerKey: PublicKey,
     signers: Signer[],
-    lookupTableAccounts: AddressLookupTableAccount[] = null
-  ): Promise<string> {
+    lookupTableAccounts?: AddressLookupTableAccount[]
+  ): Promise<string | undefined> {
     try {
       const latestBlockHash = await this.connection.getLatestBlockhash();
       const messageV0 = new TransactionMessage({
@@ -107,7 +106,7 @@ export class BaseAisaTxHandler {
       transactionV0.sign(signers);
 
       const signature = await this.connection.sendTransaction(transactionV0);
-      const confirmation = await this.connection.confirmTransaction(
+      await this.connection.confirmTransaction(
         {
           blockhash: latestBlockHash.blockhash,
           lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,

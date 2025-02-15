@@ -18,7 +18,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
   public async createMainAccount(
     uuid: number[],
     globalPayeeWhitelist: Array<PublicKey>
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let createIx = await this.program.methods
       .createMainAccount(uuid, globalPayeeWhitelist)
@@ -77,7 +77,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
   public async updateMainAccountRules(
     uuid: number[],
     globalPayeeWhitelist: Array<PublicKey>
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
 
@@ -106,7 +106,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     maxPerPayment?: anchor.BN,
     paymentCount?: number,
     paymentInterval?: anchor.BN
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
 
@@ -186,7 +186,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     tokenMint: PublicKey,
     ownerTokenAccount?: PublicKey, //default to ATA derivation
     tokenProgram?: PublicKey //default to TOKENPROGRAM, which covers most stables
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
     let TokenProgram = tokenProgram ? tokenProgram : TOKEN_PROGRAM_ID;
@@ -229,7 +229,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     tokenMint: PublicKey,
     ownerTokenAccount?: PublicKey, //default to ATA derivation
     tokenProgram?: PublicKey //default to TOKENPROGRAM, which covers most stables
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
     let subAccount = deriveSubAccount(mainAccount, this.signer.publicKey);
@@ -284,7 +284,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     tokenMint?: PublicKey,
     ownerTokenAccount?: PublicKey, //default to ATA derivation
     tokenProgram?: PublicKey //default to TOKENPROGRAM, which covers most stables
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
     let TokenProgram = tokenProgram ? tokenProgram : TOKEN_PROGRAM_ID;

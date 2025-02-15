@@ -59,7 +59,7 @@ export class SubAccountTxHandler extends BaseAisaTxHandler {
     tokenMint: PublicKey,
     payeeTokenAccount?: PublicKey, //default to ATA derivation
     tokenProgram?: PublicKey //default to TOKENPROGRAM, which covers most stables
-  ): Promise<String> {
+  ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
     let subAccount = deriveSubAccount(mainAccount, this.signer.publicKey);
