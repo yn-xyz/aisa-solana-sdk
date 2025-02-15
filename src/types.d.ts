@@ -1,4 +1,4 @@
-// src/types.d.ts
+import * as anchor from "@coral-xyz/anchor";
 
 // Define a type for UUID
 export type UUID = number[];
