@@ -10,7 +10,11 @@ import { BaseAisaTxHandler } from "./handlerBase";
 
 export class MainAccountTxHandler extends BaseAisaTxHandler {
   public static async initialize(): Promise<MainAccountTxHandler> {
-    const handler = (await super.initialize()) as MainAccountTxHandler;
+    // Create a new instance of this class
+    const handler = new MainAccountTxHandler();
+    // Initialize the base class properties by passing the instance
+    await BaseAisaTxHandler.initialize(handler);
+    // Return the properly initialized instance
     return handler;
   }
 

@@ -11,8 +11,9 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import * as dotenv from "dotenv";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
-const idlPath = "./utils/aisa_contracts.json";
+const idlPath = "../utils/aisa_contracts.json";
 
 export class BaseAisaTxHandler {
   public program!: anchor.Program<AisaContracts>; // Use definite assignment assertion
@@ -23,8 +24,12 @@ export class BaseAisaTxHandler {
   protected constructor() {}
 
   //to be called by the user or agent
-  public static async initialize(): Promise<BaseAisaTxHandler> {
-    const handler = new BaseAisaTxHandler();
+  public static async initialize(handler?: BaseAisaTxHandler): Promise<BaseAisaTxHandler> {
+    // If no handler provided, create a new instance
+    if (!handler) {
+      handler = new BaseAisaTxHandler();
+    }
+    
     dotenv.config();
 
     handler.wallet = handler.loadWallet();
@@ -75,7 +80,7 @@ export class BaseAisaTxHandler {
     }
 
     try {
-      const privateKey = Uint8Array.from(JSON.parse(privateKeyString));
+      const privateKey = bs58.decode(privateKeyString);
 
       if (privateKey.length !== 64) {
         throw new Error("Invalid private key length");
