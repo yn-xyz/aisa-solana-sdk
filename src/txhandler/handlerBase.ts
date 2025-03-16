@@ -10,7 +10,13 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
-import * as path from "path";
+import * as dotenv from "dotenv";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+// Import the IDL directly
+import AisaContractsIDL from "../utils/aisa_contracts.json";
+
+// Remove the relative path that's causing issues
+// const idlPath = "../utils/aisa_contracts.json";
 
 export class BaseAisaTxHandler {
   public program!: anchor.Program<AisaContracts>; // Use definite assignment assertion
@@ -20,19 +26,50 @@ export class BaseAisaTxHandler {
   public wallet!: anchor.Wallet; // can be user or agent
   protected constructor() {}
 
-  public getProgram(
-    idlPath: string,
-    provider: anchor.Provider
-  ): anchor.Program<AisaContracts> {
-    const AaIdl = JSON.parse(JSON.stringify(require(idlPath)));
-    return new anchor.Program(AaIdl, provider);
+  //to be called by the user or agent
+  public static async initialize(handler?: BaseAisaTxHandler, options?: { keyPair?: Keypair }): Promise<BaseAisaTxHandler> {
+    // If no handler provided, create a new instance
+    if (!handler) {
+      handler = new BaseAisaTxHandler();
+    }
+    
+    dotenv.config();
+
+    // Use provided keyPair if available, otherwise load from environment
+    if (options?.keyPair) {
+      handler.wallet = new anchor.Wallet(options.keyPair);
+      handler.signer = options.keyPair;
+    } else {
+      handler.wallet = handler.loadWallet();
+      handler.signer = handler.wallet.payer;
+    }
+    
+    handler.provider = new anchor.AnchorProvider(
+      handler.loadRpc(),
+      handler.wallet,
+      {
+        preflightCommitment: "processed",
+      }
+    );
+    handler.connection = handler.provider.connection;
+    handler.program = handler.getProgram(handler.provider);
+
+    return handler;
   }
 
-  public loadRpc(): anchor.web3.Connection {
-    const rpcUrl = process.env.RPC_URL;
+  private getProgram(
+    provider: anchor.Provider
+  ): anchor.Program<AisaContracts> {
+    // Use the imported IDL directly instead of dynamic require
+    return new anchor.Program(AisaContractsIDL as any, provider);
+  }
+
+  private loadRpc(): anchor.web3.Connection {
+    // Check for both regular and Next.js prefixed environment variables
+    const rpcUrl = process.env.RPC_URL || process.env.NEXT_PUBLIC_RPC_URL;
 
     if (!rpcUrl) {
-      throw new Error("RPC URL not defined in .env");
+      throw new Error("RPC URL not defined in .env (use RPC_URL or NEXT_PUBLIC_RPC_URL)");
     }
 
     try {
@@ -45,15 +82,16 @@ export class BaseAisaTxHandler {
     }
   }
 
-  public loadWallet(): anchor.Wallet {
-    const privateKeyString = process.env.PRIVATE_KEY;
+  private loadWallet(): anchor.Wallet {
+    // Check for both regular and Next.js prefixed environment variables
+    const privateKeyString = process.env.PRIVATE_KEY || process.env.NEXT_PUBLIC_PRIVATE_KEY;
 
     if (!privateKeyString) {
-      throw new Error("PRIVATE_KEY not defined in .env");
+      throw new Error("PRIVATE_KEY not defined in .env (use PRIVATE_KEY or NEXT_PUBLIC_PRIVATE_KEY)");
     }
 
     try {
-      const privateKey = Uint8Array.from(JSON.parse(privateKeyString));
+      const privateKey = bs58.decode(privateKeyString);
 
       if (privateKey.length !== 64) {
         throw new Error("Invalid private key length");

@@ -13,24 +13,18 @@ import * as path from "path";
 const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
 
 export class MainAccountTxHandler extends BaseAisaTxHandler {
-  //to be called by the user or agent
-  public static async initialize(): Promise<MainAccountTxHandler> {
-    const handler = new MainAccountTxHandler();
-    dotenv.config();
+  public static async initialize(handler?: MainAccountTxHandler, options?: { keyPair?: anchor.web3.Keypair }): Promise<MainAccountTxHandler> {
+    // Create a new instance of this class
+    const handler_instance = handler || new MainAccountTxHandler();
+    // Initialize the base class properties by passing the instance
+    await BaseAisaTxHandler.initialize(handler_instance, options);
+    // Return the properly initialized instance
+    return handler_instance;
+  }
 
-    handler.wallet = handler.loadWallet();
-    handler.signer = handler.wallet.payer;
-    handler.provider = new anchor.AnchorProvider(
-      handler.loadRpc(),
-      handler.wallet,
-      {
-        preflightCommitment: "processed",
-      }
-    );
-    handler.connection = handler.provider.connection;
-    handler.program = handler.getProgram(idlPath, handler.provider);
-
-    return handler;
+  // Convenience method to initialize with a keypair
+  public static async initializeWithKeypair(keypair: anchor.web3.Keypair): Promise<MainAccountTxHandler> {
+    return await MainAccountTxHandler.initialize(undefined, { keyPair: keypair });
   }
 
   //to be called by the user
