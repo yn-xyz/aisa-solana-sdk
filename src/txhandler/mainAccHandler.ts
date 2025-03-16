@@ -7,6 +7,10 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { BaseAisaTxHandler } from "./handlerBase";
+import * as dotenv from "dotenv";
+import * as path from "path";
+
+const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
 
 export class MainAccountTxHandler extends BaseAisaTxHandler {
   public static async initialize(handler?: MainAccountTxHandler, options?: { keyPair?: anchor.web3.Keypair }): Promise<MainAccountTxHandler> {
