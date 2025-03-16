@@ -9,13 +9,18 @@ import {
 import { BaseAisaTxHandler } from "./handlerBase";
 
 export class SubAccountTxHandler extends BaseAisaTxHandler {
-  public static async initialize(): Promise<SubAccountTxHandler> {
+  public static async initialize(handler?: SubAccountTxHandler, options?: { keyPair?: anchor.web3.Keypair }): Promise<SubAccountTxHandler> {
     // Create a new instance of this class
-    const handler = new SubAccountTxHandler();
+    const handler_instance = handler || new SubAccountTxHandler();
     // Initialize the base class properties by passing the instance
-    await BaseAisaTxHandler.initialize(handler);
+    await BaseAisaTxHandler.initialize(handler_instance, options);
     // Return the properly initialized instance
-    return handler;
+    return handler_instance;
+  }
+
+  // Convenience method to initialize with a keypair
+  public static async initializeWithKeypair(keypair: anchor.web3.Keypair): Promise<SubAccountTxHandler> {
+    return await SubAccountTxHandler.initialize(undefined, { keyPair: keypair });
   }
 
   //to be called by agent

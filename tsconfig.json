@@ -11,6 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/utils/aisa_contracts.json"],
   "exclude": ["node_modules", "dist"]
 }

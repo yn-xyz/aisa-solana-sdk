@@ -9,13 +9,18 @@ import {
 import { BaseAisaTxHandler } from "./handlerBase";
 
 export class MainAccountTxHandler extends BaseAisaTxHandler {
-  public static async initialize(): Promise<MainAccountTxHandler> {
+  public static async initialize(handler?: MainAccountTxHandler, options?: { keyPair?: anchor.web3.Keypair }): Promise<MainAccountTxHandler> {
     // Create a new instance of this class
-    const handler = new MainAccountTxHandler();
+    const handler_instance = handler || new MainAccountTxHandler();
     // Initialize the base class properties by passing the instance
-    await BaseAisaTxHandler.initialize(handler);
+    await BaseAisaTxHandler.initialize(handler_instance, options);
     // Return the properly initialized instance
-    return handler;
+    return handler_instance;
+  }
+
+  // Convenience method to initialize with a keypair
+  public static async initializeWithKeypair(keypair: anchor.web3.Keypair): Promise<MainAccountTxHandler> {
+    return await MainAccountTxHandler.initialize(undefined, { keyPair: keypair });
   }
 
   //to be called by the user

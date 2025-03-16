@@ -542,40 +542,18 @@ describe('AISA SDK Multi-Account Workflow', () => {
     // Create a custom handler for agent B that uses agent B's keypair
     class CustomBHandler extends SubAccountTxHandler {
       public static async initializeWithKeypair(keypair: Keypair): Promise<SubAccountTxHandler> {
-        // Save the environment variables
-        const origPrivateKey = process.env.PRIVATE_KEY;
-        
-        try {
-          // Override the private key with agent B's keypair
-          process.env.PRIVATE_KEY = bs58.encode(keypair.secretKey);
-          
-          // Initialize with the overridden environment
-          const handler = await SubAccountTxHandler.initialize();
-          return handler;
-        } finally {
-          // Restore the original environment
-          process.env.PRIVATE_KEY = origPrivateKey;
-        }
+        // 使用新的 initializeWithKeypair 方法，无需修改环境变量
+        const handler = await SubAccountTxHandler.initializeWithKeypair(keypair);
+        return handler;
       }
     }
     
     // Create a custom handler for agent C that uses agent C's keypair
     class CustomCHandler extends SubAccountTxHandler {
       public static async initializeWithKeypair(keypair: Keypair): Promise<SubAccountTxHandler> {
-        // Save the environment variables
-        const origPrivateKey = process.env.PRIVATE_KEY;
-        
-        try {
-          // Override the private key with agent C's keypair
-          process.env.PRIVATE_KEY = bs58.encode(keypair.secretKey);
-          
-          // Initialize with the overridden environment
-          const handler = await SubAccountTxHandler.initialize();
-          return handler;
-        } finally {
-          // Restore the original environment
-          process.env.PRIVATE_KEY = origPrivateKey;
-        }
+        // 使用新的 initializeWithKeypair 方法，无需修改环境变量
+        const handler = await SubAccountTxHandler.initializeWithKeypair(keypair);
+        return handler;
       }
     }
     
