@@ -11,8 +11,9 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import * as dotenv from "dotenv";
+import * as path from "path";
 
-const idlPath = "./utils/aisa_contracts.json";
+const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
 
 export class BaseAisaTxHandler {
   public program!: anchor.Program<AisaContracts>; // Use definite assignment assertion
