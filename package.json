@@ -1,6 +1,6 @@
 {
-  "name": "@kmy/aisa-solana-sdk",
-  "version": "1.0.3",
+  "name": "aisa-solana-sdk",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
