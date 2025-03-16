@@ -605,6 +605,48 @@
       "discriminator": [227, 47, 166, 42, 242, 171, 32, 114]
     }
   ],
+  "events": [
+    {
+      "name": "CreatedMainAccount",
+      "discriminator": [76, 150, 174, 109, 103, 188, 50, 171]
+    },
+    {
+      "name": "CreatedSubAccount",
+      "discriminator": [204, 130, 190, 26, 93, 157, 53, 182]
+    },
+    {
+      "name": "Payment",
+      "discriminator": [173, 15, 163, 37, 17, 144, 245, 221]
+    },
+    {
+      "name": "UpdatedGlobalWhitelist",
+      "discriminator": [134, 113, 17, 192, 159, 34, 180, 210]
+    },
+    {
+      "name": "UpdatedMaxPerPayment",
+      "discriminator": [131, 112, 235, 34, 67, 8, 203, 242]
+    },
+    {
+      "name": "UpdatedPaymentCount",
+      "discriminator": [158, 73, 4, 202, 13, 180, 55, 168]
+    },
+    {
+      "name": "UpdatedPaymentInterval",
+      "discriminator": [98, 68, 209, 188, 102, 141, 234, 80]
+    },
+    {
+      "name": "UpdatedSubAccountAllowance",
+      "discriminator": [167, 211, 199, 50, 153, 176, 149, 166]
+    },
+    {
+      "name": "UpdatedWhitelistedPayees",
+      "discriminator": [130, 241, 179, 196, 93, 215, 86, 83]
+    },
+    {
+      "name": "UpdatedWhitelistedTokens",
+      "discriminator": [31, 99, 45, 139, 191, 83, 7, 27]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -669,6 +711,68 @@
   ],
   "types": [
     {
+      "name": "CreatedMainAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "main_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "global_whitelisted_payees",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatedSubAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "main_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_per_payment",
+            "type": "u64"
+          },
+          {
+            "name": "payment_count",
+            "type": "u32"
+          },
+          {
+            "name": "payment_interval",
+            "type": "u64"
+          },
+          {
+            "name": "whitelisted_payees",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "whitelisted_tokens",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "MainAccount",
       "type": {
         "kind": "struct",
@@ -688,6 +792,38 @@
             "type": {
               "vec": "pubkey"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Payment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "payee",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "payment_timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "payment_count",
+            "type": "u32"
           }
         ]
       }
@@ -724,6 +860,132 @@
             "type": {
               "vec": "pubkey"
             }
+          },
+          {
+            "name": "whitelisted_tokens",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedGlobalWhitelist",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "main_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "global_whitelisted_payees",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedMaxPerPayment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_per_payment",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedPaymentCount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "payment_count",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedPaymentInterval",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "payment_interval",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedSubAccountAllowance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "updated_payment_count",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedWhitelistedPayees",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "whitelisted_payees",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedWhitelistedTokens",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sub_account",
+            "type": "pubkey"
           },
           {
             "name": "whitelisted_tokens",
