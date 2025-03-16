@@ -12,8 +12,6 @@ import {
 } from "@solana/web3.js";
 import * as path from "path";
 
-const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
-
 export class BaseAisaTxHandler {
   public program!: anchor.Program<AisaContracts>; // Use definite assignment assertion
   public provider!: anchor.Provider;
