@@ -10,7 +10,6 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
-import * as dotenv from "dotenv";
 import * as path from "path";
 
 const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
@@ -23,27 +22,7 @@ export class BaseAisaTxHandler {
   public wallet!: anchor.Wallet; // can be user or agent
   protected constructor() {}
 
-  //to be called by the user or agent
-  public static async initialize(): Promise<BaseAisaTxHandler> {
-    const handler = new BaseAisaTxHandler();
-    dotenv.config();
-
-    handler.wallet = handler.loadWallet();
-    handler.signer = handler.wallet.payer;
-    handler.provider = new anchor.AnchorProvider(
-      handler.loadRpc(),
-      handler.wallet,
-      {
-        preflightCommitment: "processed",
-      }
-    );
-    handler.connection = handler.provider.connection;
-    handler.program = handler.getProgram(idlPath, handler.provider);
-
-    return handler;
-  }
-
-  private getProgram(
+  public getProgram(
     idlPath: string,
     provider: anchor.Provider
   ): anchor.Program<AisaContracts> {
@@ -51,7 +30,7 @@ export class BaseAisaTxHandler {
     return new anchor.Program(AaIdl, provider);
   }
 
-  private loadRpc(): anchor.web3.Connection {
+  public loadRpc(): anchor.web3.Connection {
     const rpcUrl = process.env.RPC_URL;
 
     if (!rpcUrl) {
@@ -68,7 +47,7 @@ export class BaseAisaTxHandler {
     }
   }
 
-  private loadWallet(): anchor.Wallet {
+  public loadWallet(): anchor.Wallet {
     const privateKeyString = process.env.PRIVATE_KEY;
 
     if (!privateKeyString) {

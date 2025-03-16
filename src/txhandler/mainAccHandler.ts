@@ -7,10 +7,29 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { BaseAisaTxHandler } from "./handlerBase";
+import * as dotenv from "dotenv";
+import * as path from "path";
+
+const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
 
 export class MainAccountTxHandler extends BaseAisaTxHandler {
+  //to be called by the user or agent
   public static async initialize(): Promise<MainAccountTxHandler> {
-    const handler = (await super.initialize()) as MainAccountTxHandler;
+    const handler = new MainAccountTxHandler();
+    dotenv.config();
+
+    handler.wallet = handler.loadWallet();
+    handler.signer = handler.wallet.payer;
+    handler.provider = new anchor.AnchorProvider(
+      handler.loadRpc(),
+      handler.wallet,
+      {
+        preflightCommitment: "processed",
+      }
+    );
+    handler.connection = handler.provider.connection;
+    handler.program = handler.getProgram(idlPath, handler.provider);
+
     return handler;
   }
 
