@@ -2,7 +2,7 @@
 
 A TypeScript library for interacting with AISA (Automated Intelligent Spending Accounts) Solana smart contracts. This SDK provides a set of APIs that allow applications to create and manage main accounts and sub-accounts, set payment rules, handle authorized payments, and more.
 
-[中文文档](./README-zhCN.md)
+[中文文档](https://github.com/yn-xyz/aisa-solana-sdk/blob/main/README-zhCN.md)
 
 ## Features
 

@@ -1,6 +1,6 @@
 {
   "name": "aisa-solana-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,6 +12,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yn-xyz/aisa-solana-sdk.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
