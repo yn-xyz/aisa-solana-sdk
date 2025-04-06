@@ -1,19 +1,24 @@
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
-import { deriveMainAccount, deriveSubAccount } from "../utils/common";
+import {
+  deriveMainAccount,
+  deriveSubAccount,
+  SpendCap,
+  SpendCapUpdate,
+  TimeUnit,
+} from "../utils/common";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { BaseAisaTxHandler } from "./handlerBase";
-import * as dotenv from "dotenv";
-import * as path from "path";
-
-const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
 
 export class MainAccountTxHandler extends BaseAisaTxHandler {
-  public static async initialize(handler?: MainAccountTxHandler, options?: { keyPair?: anchor.web3.Keypair }): Promise<MainAccountTxHandler> {
+  public static async initialize(
+    handler?: MainAccountTxHandler,
+    options?: { keyPair?: anchor.web3.Keypair }
+  ): Promise<MainAccountTxHandler> {
     // Create a new instance of this class
     const handler_instance = handler || new MainAccountTxHandler();
     // Initialize the base class properties by passing the instance
@@ -23,18 +28,23 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
   }
 
   // Convenience method to initialize with a keypair
-  public static async initializeWithKeypair(keypair: anchor.web3.Keypair): Promise<MainAccountTxHandler> {
-    return await MainAccountTxHandler.initialize(undefined, { keyPair: keypair });
+  public static async initializeWithKeypair(
+    keypair: anchor.web3.Keypair
+  ): Promise<MainAccountTxHandler> {
+    return await MainAccountTxHandler.initialize(undefined, {
+      keyPair: keypair,
+    });
   }
 
   //to be called by the user
   public async createMainAccount(
     uuid: number[],
-    globalPayeeWhitelist: Array<PublicKey>
+    globalPayeeWhitelist: Array<PublicKey>,
+    globalTokenWhitelist: Array<PublicKey>
   ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let createIx = await this.program.methods
-      .createMainAccount(uuid, globalPayeeWhitelist)
+      .createMainAccount(uuid, globalPayeeWhitelist, globalTokenWhitelist)
       .accounts({
         owner: this.signer.publicKey,
       })
@@ -51,11 +61,21 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
   //to be called by user
   public async getMainAccountState(
     uuid: number[]
-  ): Promise<[owner: PublicKey, globalPayeeWhitelist: Array<PublicKey>]> {
+  ): Promise<
+    [
+      owner: PublicKey,
+      globalPayeeWhitelist: Array<PublicKey>,
+      globalTokenWhitelist: Array<PublicKey>
+    ]
+  > {
     const mainAccountState = await this.program.account.mainAccount.fetch(
       deriveMainAccount(Uint8Array.from(uuid))
     );
-    return [mainAccountState.owner, mainAccountState.globalWhitelistedPayees];
+    return [
+      mainAccountState.owner,
+      mainAccountState.globalWhitelistedPayees,
+      mainAccountState.globalWhitelistedTokens,
+    ];
   }
 
   //to be called by user
@@ -66,10 +86,11 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     [
       whitelistedPayees: Array<PublicKey>,
       whitelistedTokens: Array<PublicKey>,
-      paymentInterval: anchor.BN,
       paymentCount: number,
       maxPerPayment: anchor.BN,
-      lastPaymentTimestamp: anchor.BN
+      spendCap: SpendCap,
+      lastResetTimestamp: anchor.BN,
+      expendedBudget: anchor.BN
     ]
   > {
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
@@ -79,29 +100,44 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     return [
       subAccountState.whitelistedPayees,
       subAccountState.whitelistedTokens,
-      subAccountState.paymentInterval,
       subAccountState.paymentCount,
       subAccountState.maxPerPayment,
-      subAccountState.lastPaymentTimestamp,
+      subAccountState.spendCap,
+      subAccountState.lastResetTimestamp,
+      subAccountState.expendedBudget,
     ];
   }
 
   //to be called by the user
   public async updateMainAccountRules(
     uuid: number[],
-    globalPayeeWhitelist: Array<PublicKey>
+    globalPayeeWhitelist?: Array<PublicKey>,
+    globalTokenWhitelist?: Array<PublicKey>
   ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
 
-    let updateMainAccountIx = await this.program.methods
-      .updateGlobalWhitelistedPayees(globalPayeeWhitelist)
-      .accounts({
-        owner: this.signer.publicKey,
-        mainAccount: mainAccount,
-      })
-      .instruction();
-    transactionInstructions.push(updateMainAccountIx);
+    if (globalPayeeWhitelist) {
+      let updateMainAccountIx = await this.program.methods
+        .updateGlobalWhitelistedPayees(globalPayeeWhitelist)
+        .accounts({
+          owner: this.signer.publicKey,
+          mainAccount: mainAccount,
+        })
+        .instruction();
+      transactionInstructions.push(updateMainAccountIx);
+    }
+
+    if (globalTokenWhitelist) {
+      let updateMainAccountIx = await this.program.methods
+        .updateGlobalWhitelistedTokens(globalTokenWhitelist)
+        .accounts({
+          owner: this.signer.publicKey,
+          mainAccount: mainAccount,
+        })
+        .instruction();
+      transactionInstructions.push(updateMainAccountIx);
+    }
 
     return await this.sendAndConfirmTransaction(
       transactionInstructions,
@@ -118,7 +154,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     tokenWhitelist?: Array<PublicKey>,
     maxPerPayment?: anchor.BN,
     paymentCount?: number,
-    paymentInterval?: anchor.BN
+    spendCapUpdate?: SpendCapUpdate
   ): Promise<String | undefined> {
     let transactionInstructions: TransactionInstruction[] = [];
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
@@ -170,16 +206,47 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
         .instruction();
       transactionInstructions.push(paymentCountIx);
 
-      if (paymentInterval) {
-        let paymentIntervalIx = await this.program.methods
-          .updatePaymentInterval(paymentInterval)
-          .accounts({
-            owner: this.signer.publicKey,
-            agent: agent,
-            mainAccount: mainAccount,
-          })
-          .instruction();
-        transactionInstructions.push(paymentIntervalIx);
+      if (spendCapUpdate) {
+        switch (spendCapUpdate.type) {
+          case "spendCap":
+            let spendCapIx = await this.program.methods
+              .updateAndRefreshSpendCap(spendCapUpdate.value)
+              .accounts({
+                owner: this.signer.publicKey,
+                agent: agent,
+                mainAccount: mainAccount,
+              })
+              .instruction();
+            transactionInstructions.push(spendCapIx);
+            break;
+
+          case "amount":
+            let amountIx = await this.program.methods
+              .updateSpendCapAmount(spendCapUpdate.value)
+              .accounts({
+                owner: this.signer.publicKey,
+                agent: agent,
+                mainAccount: mainAccount,
+              })
+              .instruction();
+            transactionInstructions.push(amountIx);
+            break;
+
+          case "duration":
+            let durationIx = await this.program.methods
+              .updateSpendCapDuration(
+                spendCapUpdate.duration,
+                spendCapUpdate.unit
+              )
+              .accounts({
+                owner: this.signer.publicKey,
+                agent: agent,
+                mainAccount: mainAccount,
+              })
+              .instruction();
+            transactionInstructions.push(durationIx);
+            break;
+        }
       }
 
       return await this.sendAndConfirmTransaction(
@@ -292,7 +359,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
     tokenWhitelist: Array<PublicKey>, // empty array
     maxPerPayment: anchor.BN, //uint64::MAX
     paymentCount: number, // 0
-    paymentInterval: anchor.BN, // 0
+    spendCap: SpendCap,
     allowanceAmount: anchor.BN, // 0
     tokenMint?: PublicKey,
     ownerTokenAccount?: PublicKey, //default to ATA derivation
@@ -308,7 +375,7 @@ export class MainAccountTxHandler extends BaseAisaTxHandler {
         tokenWhitelist,
         maxPerPayment,
         paymentCount,
-        paymentInterval
+        spendCap
       )
       .accounts({
         owner: this.signer.publicKey,

@@ -1,6 +1,29 @@
 import { PublicKey } from "@solana/web3.js";
 import { AISA_CONTRACT, MAIN_ACCOUNT_SEED, SUB_ACCOUNT_SEED } from "./consts";
 import { Connection } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
+
+export type TimeUnit =
+  | { second: {} }
+  | { minute: {} }
+  | { hour: {} }
+  | { day: {} }
+  | { week: {} }
+  | { month: {} };
+
+export type SpendCap =
+  | { none: {} }
+  | {
+      limited: {
+        duration: number; // u32
+        unit: TimeUnit;
+        amount: BN; // u64
+      };
+    };
+export type SpendCapUpdate =
+  | { type: "spendCap"; value: SpendCap }
+  | { type: "amount"; value: BN }
+  | { type: "duration"; duration: number; unit: TimeUnit };
 
 export function deriveMainAccount(uuid: Uint8Array): PublicKey {
   return PublicKey.findProgramAddressSync(
