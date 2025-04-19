@@ -49,6 +49,12 @@
           "type": {
             "vec": "pubkey"
           }
+        },
+        {
+          "name": "global_whitelisted_tokens",
+          "type": {
+            "vec": "pubkey"
+          }
         }
       ]
     },
@@ -114,8 +120,12 @@
           "type": "u32"
         },
         {
-          "name": "payment_interval",
-          "type": "u64"
+          "name": "spend_cap",
+          "type": {
+            "defined": {
+              "name": "SpendCap"
+            }
+          }
         }
       ]
     },
@@ -334,6 +344,57 @@
       ]
     },
     {
+      "name": "update_and_refresh_spend_cap",
+      "discriminator": [43, 2, 161, 70, 220, 23, 12, 52],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "agent"
+        },
+        {
+          "name": "main_account"
+        },
+        {
+          "name": "sub_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [115, 117, 98, 95, 97, 99, 99, 111, 117, 110, 116]
+              },
+              {
+                "kind": "account",
+                "path": "main_account"
+              },
+              {
+                "kind": "account",
+                "path": "agent"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "optional": true,
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "updated_spend_cap",
+          "type": {
+            "defined": {
+              "name": "SpendCap"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "update_global_whitelisted_payees",
       "discriminator": [223, 238, 153, 206, 225, 143, 209, 38],
       "accounts": [
@@ -348,12 +409,41 @@
         },
         {
           "name": "system_program",
+          "optional": true,
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
           "name": "global_whitelisted_payees",
+          "type": {
+            "vec": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_global_whitelisted_tokens",
+      "discriminator": [6, 44, 252, 164, 245, 179, 137, 204],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "main_account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "optional": true,
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "global_whitelisted_tokens",
           "type": {
             "vec": "pubkey"
           }
@@ -396,6 +486,7 @@
         },
         {
           "name": "system_program",
+          "optional": true,
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -442,6 +533,7 @@
         },
         {
           "name": "system_program",
+          "optional": true,
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -453,8 +545,8 @@
       ]
     },
     {
-      "name": "update_payment_interval",
-      "discriminator": [33, 189, 150, 61, 234, 89, 241, 114],
+      "name": "update_spend_cap_amount",
+      "discriminator": [251, 39, 213, 84, 31, 183, 13, 204],
       "accounts": [
         {
           "name": "owner",
@@ -488,13 +580,69 @@
         },
         {
           "name": "system_program",
+          "optional": true,
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "payment_interval",
+          "name": "updated_amount",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_spend_cap_duration",
+      "discriminator": [169, 46, 226, 124, 191, 215, 16, 205],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "agent"
+        },
+        {
+          "name": "main_account"
+        },
+        {
+          "name": "sub_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [115, 117, 98, 95, 97, 99, 99, 111, 117, 110, 116]
+              },
+              {
+                "kind": "account",
+                "path": "main_account"
+              },
+              {
+                "kind": "account",
+                "path": "agent"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "optional": true,
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "updated_duration",
+          "type": "u32"
+        },
+        {
+          "name": "updated_unit",
+          "type": {
+            "defined": {
+              "name": "TimeUnit"
+            }
+          }
         }
       ]
     },
@@ -534,6 +682,7 @@
         },
         {
           "name": "system_program",
+          "optional": true,
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -582,6 +731,7 @@
         },
         {
           "name": "system_program",
+          "optional": true,
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -619,8 +769,12 @@
       "discriminator": [173, 15, 163, 37, 17, 144, 245, 221]
     },
     {
-      "name": "UpdatedGlobalWhitelist",
-      "discriminator": [134, 113, 17, 192, 159, 34, 180, 210]
+      "name": "UpdatedGlobalWhitelistedPayees",
+      "discriminator": [22, 161, 178, 225, 221, 237, 24, 170]
+    },
+    {
+      "name": "UpdatedGlobalWhitelistedTokens",
+      "discriminator": [66, 137, 243, 228, 121, 252, 120, 201]
     },
     {
       "name": "UpdatedMaxPerPayment",
@@ -631,8 +785,8 @@
       "discriminator": [158, 73, 4, 202, 13, 180, 55, 168]
     },
     {
-      "name": "UpdatedPaymentInterval",
-      "discriminator": [98, 68, 209, 188, 102, 141, 234, 80]
+      "name": "UpdatedSpendCap",
+      "discriminator": [208, 30, 213, 208, 121, 8, 147, 205]
     },
     {
       "name": "UpdatedSubAccountAllowance",
@@ -707,6 +861,21 @@
       "code": 6011,
       "name": "InsufficientPaymentCount",
       "msg": "Insufficient Payment Count"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidSpendCapPeriod",
+      "msg": "Spend period too large"
+    },
+    {
+      "code": 6013,
+      "name": "SpendAmountExceeded",
+      "msg": "Spending amount exceeded"
+    },
+    {
+      "code": 6014,
+      "name": "NotLimitedSpendCap",
+      "msg": "Spend cap is not limited"
     }
   ],
   "types": [
@@ -725,6 +894,12 @@
           },
           {
             "name": "global_whitelisted_payees",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "global_whitelisted_tokens",
             "type": {
               "vec": "pubkey"
             }
@@ -754,8 +929,12 @@
             "type": "u32"
           },
           {
-            "name": "payment_interval",
-            "type": "u64"
+            "name": "spend_cap",
+            "type": {
+              "defined": {
+                "name": "SpendCap"
+              }
+            }
           },
           {
             "name": "whitelisted_payees",
@@ -792,6 +971,19 @@
             "type": {
               "vec": "pubkey"
             }
+          },
+          {
+            "name": "global_whitelisted_tokens",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "_reserved",
+            "docs": ["Reserved space for upgrade authority"],
+            "type": {
+              "array": ["u8", 128]
+            }
           }
         ]
       }
@@ -818,12 +1010,48 @@
             "type": "u64"
           },
           {
-            "name": "payment_timestamp",
+            "name": "last_reset_timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "expended_budget",
             "type": "u64"
           },
           {
             "name": "payment_count",
             "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SpendCap",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Limited",
+            "fields": [
+              {
+                "name": "duration",
+                "type": "u32"
+              },
+              {
+                "name": "unit",
+                "type": {
+                  "defined": {
+                    "name": "TimeUnit"
+                  }
+                }
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              }
+            ]
           }
         ]
       }
@@ -840,20 +1068,12 @@
             }
           },
           {
-            "name": "last_payment_timestamp",
-            "type": "u64"
-          },
-          {
             "name": "max_per_payment",
             "type": "u64"
           },
           {
             "name": "payment_count",
             "type": "u32"
-          },
-          {
-            "name": "payment_interval",
-            "type": "u64"
           },
           {
             "name": "whitelisted_payees",
@@ -866,12 +1086,60 @@
             "type": {
               "vec": "pubkey"
             }
+          },
+          {
+            "name": "spend_cap",
+            "type": {
+              "defined": {
+                "name": "SpendCap"
+              }
+            }
+          },
+          {
+            "name": "last_reset_timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "expended_budget",
+            "type": "u64"
+          },
+          {
+            "name": "_reserved",
+            "type": {
+              "array": ["u8", 128]
+            }
           }
         ]
       }
     },
     {
-      "name": "UpdatedGlobalWhitelist",
+      "name": "TimeUnit",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Second"
+          },
+          {
+            "name": "Minute"
+          },
+          {
+            "name": "Hour"
+          },
+          {
+            "name": "Day"
+          },
+          {
+            "name": "Week"
+          },
+          {
+            "name": "Month"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedGlobalWhitelistedPayees",
       "type": {
         "kind": "struct",
         "fields": [
@@ -881,6 +1149,24 @@
           },
           {
             "name": "global_whitelisted_payees",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdatedGlobalWhitelistedTokens",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "main_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "global_whitelisted_tokens",
             "type": {
               "vec": "pubkey"
             }
@@ -921,7 +1207,7 @@
       }
     },
     {
-      "name": "UpdatedPaymentInterval",
+      "name": "UpdatedSpendCap",
       "type": {
         "kind": "struct",
         "fields": [
@@ -930,7 +1216,19 @@
             "type": "pubkey"
           },
           {
-            "name": "payment_interval",
+            "name": "spend_cap",
+            "type": {
+              "defined": {
+                "name": "SpendCap"
+              }
+            }
+          },
+          {
+            "name": "last_reset_timestamp",
+            "type": "u64"
+          },
+          {
+            "name": "expended_budget",
             "type": "u64"
           }
         ]

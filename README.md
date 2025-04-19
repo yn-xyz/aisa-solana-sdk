@@ -51,13 +51,22 @@ const subAccountHandler = await SubAccountTxHandler.initialize();
 // Create a main account
 const uuid = [1, 2, 3, 4]; // Unique identifier
 const globalPayeeWhitelist = ["payee_pubkey1", "payee_pubkey2"]; // Global allowed payee list
-const txId = await mainAccountHandler.createMainAccount(uuid, globalPayeeWhitelist);
+const globalTokenWhitelist = ["token_pubkey1", "token_pubkey2"]; // Allowed tokens for the sub-account
+const txId = await mainAccountHandler.createMainAccount(
+  uuid,
+  globalPayeeWhitelist,
+  globalTokenWhitelist
+);
 
 // Query main account state
 const [owner, whitelist] = await mainAccountHandler.getMainAccountState(uuid);
 
 // Update main account rules
-await mainAccountHandler.updateMainAccountRules(uuid, ["new_payee_pubkey1", "new_payee_pubkey2"]);
+await mainAccountHandler.updateMainAccountRules(
+  uuid,
+  globalPayeeWhitelist,
+  globalTokenWhitelist
+);
 ```
 
 ### Sub-Account Operations
@@ -71,8 +80,16 @@ const payeeWhitelist = ["payee_pubkey1"]; // Allowed payees for the sub-account
 const tokenWhitelist = ["token_pubkey1", "token_pubkey2"]; // Allowed tokens for the sub-account
 const maxPerPayment = new anchor.BN(1000000); // Maximum amount per payment
 const paymentCount = 10; // Number of payments
-const paymentInterval = new anchor.BN(86400); // Payment interval (seconds)
 const allowanceAmount = new anchor.BN(10000000); // Initial allowance amount
+const daily1MSpendCapUpdate = {
+  // daily spend cap of 1 million
+  limited: {
+    duration: 1,
+    unit: { day: {} },
+    amount: new BN(1000_000),
+  },
+};
+const noLimitSpendCap = { none: {} }; // no limit spend cap
 
 await mainAccountHandler.createSubAccount(
   uuid,
@@ -81,9 +98,9 @@ await mainAccountHandler.createSubAccount(
   tokenWhitelist,
   maxPerPayment,
   paymentCount,
-  paymentInterval,
+  daily1MSpendCapUpdate,
   allowanceAmount,
-  "token_pubkey" // Optional parameter
+  "token_pubkey1"
 );
 
 // Increase sub-account allowance
@@ -92,7 +109,7 @@ await mainAccountHandler.increaseAllowance(
   agent,
   new anchor.BN(5000000), // Amount to increase
   5, // Payment count
-  "token_pubkey"
+  "token_pubkey1"
 );
 
 // Decrease sub-account allowance
@@ -101,7 +118,49 @@ await mainAccountHandler.decreaseAllowance(
   agent,
   new anchor.BN(2000000), // Amount to decrease
   2, // Payment count
-  "token_pubkey"
+  "token_pubkey1"
+);
+
+// Update sub-account rules
+const noLimitSpendCapUpdate: SpendCapUpdate = {
+  // no limit spend cap update
+  type: "spendCap",
+  value: { none: {} },
+};
+
+const daily1MSpendCapUpdate: SpendCapUpdate = {
+  // daily 1M spend cap update
+  type: "spendCap",
+  value: {
+    limited: {
+      duration: 1,
+      unit: { day: {} },
+      amount: new anchor.BN(1000),
+    },
+  },
+};
+
+const spendCapAmountUpdate: SpendCapUpdate = {
+  // amount spend cap update
+  type: "amount",
+  value: new anchor.BN(1000),
+};
+
+const spendCapDurationUpdate: SpendCapUpdate = {
+  // duration spend cap update
+  type: "duration",
+  duration: 2,
+  unit: { week: {} },
+};
+
+await mainAccountHandler.updateSubAccountRules(
+  uuid,
+  agent,
+  ["payee_public_key"],
+  ["token_public_key"],
+  maxPerPayment,
+  paymentCount,
+  spendCapAmountUpdate
 );
 ```
 
@@ -143,4 +202,4 @@ Sub-account transaction handler, used by sub-account agents/users, providing the
 
 ## License
 
-ISC 
+ISC

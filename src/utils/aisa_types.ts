@@ -55,6 +55,12 @@ export type AisaContracts = {
           type: {
             vec: "pubkey";
           };
+        },
+        {
+          name: "globalWhitelistedTokens";
+          type: {
+            vec: "pubkey";
+          };
         }
       ];
     },
@@ -120,8 +126,12 @@ export type AisaContracts = {
           type: "u32";
         },
         {
-          name: "paymentInterval";
-          type: "u64";
+          name: "spendCap";
+          type: {
+            defined: {
+              name: "spendCap";
+            };
+          };
         }
       ];
     },
@@ -369,6 +379,57 @@ export type AisaContracts = {
       ];
     },
     {
+      name: "updateAndRefreshSpendCap";
+      discriminator: [43, 2, 161, 70, 220, 23, 12, 52];
+      accounts: [
+        {
+          name: "owner";
+          signer: true;
+        },
+        {
+          name: "agent";
+        },
+        {
+          name: "mainAccount";
+        },
+        {
+          name: "subAccount";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [115, 117, 98, 95, 97, 99, 99, 111, 117, 110, 116];
+              },
+              {
+                kind: "account";
+                path: "mainAccount";
+              },
+              {
+                kind: "account";
+                path: "agent";
+              }
+            ];
+          };
+        },
+        {
+          name: "systemProgram";
+          optional: true;
+          address: "11111111111111111111111111111111";
+        }
+      ];
+      args: [
+        {
+          name: "updatedSpendCap";
+          type: {
+            defined: {
+              name: "spendCap";
+            };
+          };
+        }
+      ];
+    },
+    {
       name: "updateGlobalWhitelistedPayees";
       discriminator: [223, 238, 153, 206, 225, 143, 209, 38];
       accounts: [
@@ -383,12 +444,41 @@ export type AisaContracts = {
         },
         {
           name: "systemProgram";
+          optional: true;
           address: "11111111111111111111111111111111";
         }
       ];
       args: [
         {
           name: "globalWhitelistedPayees";
+          type: {
+            vec: "pubkey";
+          };
+        }
+      ];
+    },
+    {
+      name: "updateGlobalWhitelistedTokens";
+      discriminator: [6, 44, 252, 164, 245, 179, 137, 204];
+      accounts: [
+        {
+          name: "owner";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "mainAccount";
+          writable: true;
+        },
+        {
+          name: "systemProgram";
+          optional: true;
+          address: "11111111111111111111111111111111";
+        }
+      ];
+      args: [
+        {
+          name: "globalWhitelistedTokens";
           type: {
             vec: "pubkey";
           };
@@ -431,6 +521,7 @@ export type AisaContracts = {
         },
         {
           name: "systemProgram";
+          optional: true;
           address: "11111111111111111111111111111111";
         }
       ];
@@ -477,6 +568,7 @@ export type AisaContracts = {
         },
         {
           name: "systemProgram";
+          optional: true;
           address: "11111111111111111111111111111111";
         }
       ];
@@ -488,8 +580,8 @@ export type AisaContracts = {
       ];
     },
     {
-      name: "updatePaymentInterval";
-      discriminator: [33, 189, 150, 61, 234, 89, 241, 114];
+      name: "updateSpendCapAmount";
+      discriminator: [251, 39, 213, 84, 31, 183, 13, 204];
       accounts: [
         {
           name: "owner";
@@ -523,13 +615,69 @@ export type AisaContracts = {
         },
         {
           name: "systemProgram";
+          optional: true;
           address: "11111111111111111111111111111111";
         }
       ];
       args: [
         {
-          name: "paymentInterval";
+          name: "updatedAmount";
           type: "u64";
+        }
+      ];
+    },
+    {
+      name: "updateSpendCapDuration";
+      discriminator: [169, 46, 226, 124, 191, 215, 16, 205];
+      accounts: [
+        {
+          name: "owner";
+          signer: true;
+        },
+        {
+          name: "agent";
+        },
+        {
+          name: "mainAccount";
+        },
+        {
+          name: "subAccount";
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: "const";
+                value: [115, 117, 98, 95, 97, 99, 99, 111, 117, 110, 116];
+              },
+              {
+                kind: "account";
+                path: "mainAccount";
+              },
+              {
+                kind: "account";
+                path: "agent";
+              }
+            ];
+          };
+        },
+        {
+          name: "systemProgram";
+          optional: true;
+          address: "11111111111111111111111111111111";
+        }
+      ];
+      args: [
+        {
+          name: "updatedDuration";
+          type: "u32";
+        },
+        {
+          name: "updatedUnit";
+          type: {
+            defined: {
+              name: "timeUnit";
+            };
+          };
         }
       ];
     },
@@ -569,6 +717,7 @@ export type AisaContracts = {
         },
         {
           name: "systemProgram";
+          optional: true;
           address: "11111111111111111111111111111111";
         }
       ];
@@ -617,6 +766,7 @@ export type AisaContracts = {
         },
         {
           name: "systemProgram";
+          optional: true;
           address: "11111111111111111111111111111111";
         }
       ];
@@ -638,6 +788,52 @@ export type AisaContracts = {
     {
       name: "subAccount";
       discriminator: [227, 47, 166, 42, 242, 171, 32, 114];
+    }
+  ];
+  events: [
+    {
+      name: "createdMainAccount";
+      discriminator: [76, 150, 174, 109, 103, 188, 50, 171];
+    },
+    {
+      name: "createdSubAccount";
+      discriminator: [204, 130, 190, 26, 93, 157, 53, 182];
+    },
+    {
+      name: "payment";
+      discriminator: [173, 15, 163, 37, 17, 144, 245, 221];
+    },
+    {
+      name: "updatedGlobalWhitelistedPayees";
+      discriminator: [22, 161, 178, 225, 221, 237, 24, 170];
+    },
+    {
+      name: "updatedGlobalWhitelistedTokens";
+      discriminator: [66, 137, 243, 228, 121, 252, 120, 201];
+    },
+    {
+      name: "updatedMaxPerPayment";
+      discriminator: [131, 112, 235, 34, 67, 8, 203, 242];
+    },
+    {
+      name: "updatedPaymentCount";
+      discriminator: [158, 73, 4, 202, 13, 180, 55, 168];
+    },
+    {
+      name: "updatedSpendCap";
+      discriminator: [208, 30, 213, 208, 121, 8, 147, 205];
+    },
+    {
+      name: "updatedSubAccountAllowance";
+      discriminator: [167, 211, 199, 50, 153, 176, 149, 166];
+    },
+    {
+      name: "updatedWhitelistedPayees";
+      discriminator: [130, 241, 179, 196, 93, 215, 86, 83];
+    },
+    {
+      name: "updatedWhitelistedTokens";
+      discriminator: [31, 99, 45, 139, 191, 83, 7, 27];
     }
   ];
   errors: [
@@ -700,9 +896,96 @@ export type AisaContracts = {
       code: 6011;
       name: "insufficientPaymentCount";
       msg: "Insufficient Payment Count";
+    },
+    {
+      code: 6012;
+      name: "invalidSpendCapPeriod";
+      msg: "Spend period too large";
+    },
+    {
+      code: 6013;
+      name: "spendAmountExceeded";
+      msg: "Spending amount exceeded";
+    },
+    {
+      code: 6014;
+      name: "notLimitedSpendCap";
+      msg: "Spend cap is not limited";
     }
   ];
   types: [
+    {
+      name: "createdMainAccount";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "mainAccount";
+            type: "pubkey";
+          },
+          {
+            name: "owner";
+            type: "pubkey";
+          },
+          {
+            name: "globalWhitelistedPayees";
+            type: {
+              vec: "pubkey";
+            };
+          },
+          {
+            name: "globalWhitelistedTokens";
+            type: {
+              vec: "pubkey";
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: "createdSubAccount";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "mainAccount";
+            type: "pubkey";
+          },
+          {
+            name: "subAccount";
+            type: "pubkey";
+          },
+          {
+            name: "maxPerPayment";
+            type: "u64";
+          },
+          {
+            name: "paymentCount";
+            type: "u32";
+          },
+          {
+            name: "spendCap";
+            type: {
+              defined: {
+                name: "spendCap";
+              };
+            };
+          },
+          {
+            name: "whitelistedPayees";
+            type: {
+              vec: "pubkey";
+            };
+          },
+          {
+            name: "whitelistedTokens";
+            type: {
+              vec: "pubkey";
+            };
+          }
+        ];
+      };
+    },
     {
       name: "mainAccount";
       type: {
@@ -723,6 +1006,87 @@ export type AisaContracts = {
             type: {
               vec: "pubkey";
             };
+          },
+          {
+            name: "globalWhitelistedTokens";
+            type: {
+              vec: "pubkey";
+            };
+          },
+          {
+            name: "reserved";
+            docs: ["Reserved space for upgrade authority"];
+            type: {
+              array: ["u8", 128];
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: "payment";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
+          },
+          {
+            name: "payee";
+            type: "pubkey";
+          },
+          {
+            name: "tokenMint";
+            type: "pubkey";
+          },
+          {
+            name: "amount";
+            type: "u64";
+          },
+          {
+            name: "lastResetTimestamp";
+            type: "u64";
+          },
+          {
+            name: "expendedBudget";
+            type: "u64";
+          },
+          {
+            name: "paymentCount";
+            type: "u32";
+          }
+        ];
+      };
+    },
+    {
+      name: "spendCap";
+      type: {
+        kind: "enum";
+        variants: [
+          {
+            name: "none";
+          },
+          {
+            name: "limited";
+            fields: [
+              {
+                name: "duration";
+                type: "u32";
+              },
+              {
+                name: "unit";
+                type: {
+                  defined: {
+                    name: "timeUnit";
+                  };
+                };
+              },
+              {
+                name: "amount";
+                type: "u64";
+              }
+            ];
           }
         ];
       };
@@ -739,10 +1103,6 @@ export type AisaContracts = {
             };
           },
           {
-            name: "lastPaymentTimestamp";
-            type: "u64";
-          },
-          {
             name: "maxPerPayment";
             type: "u64";
           },
@@ -751,14 +1111,214 @@ export type AisaContracts = {
             type: "u32";
           },
           {
-            name: "paymentInterval";
+            name: "whitelistedPayees";
+            type: {
+              vec: "pubkey";
+            };
+          },
+          {
+            name: "whitelistedTokens";
+            type: {
+              vec: "pubkey";
+            };
+          },
+          {
+            name: "spendCap";
+            type: {
+              defined: {
+                name: "spendCap";
+              };
+            };
+          },
+          {
+            name: "lastResetTimestamp";
             type: "u64";
+          },
+          {
+            name: "expendedBudget";
+            type: "u64";
+          },
+          {
+            name: "reserved";
+            type: {
+              array: ["u8", 128];
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: "timeUnit";
+      type: {
+        kind: "enum";
+        variants: [
+          {
+            name: "second";
+          },
+          {
+            name: "minute";
+          },
+          {
+            name: "hour";
+          },
+          {
+            name: "day";
+          },
+          {
+            name: "week";
+          },
+          {
+            name: "month";
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedGlobalWhitelistedPayees";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "mainAccount";
+            type: "pubkey";
+          },
+          {
+            name: "globalWhitelistedPayees";
+            type: {
+              vec: "pubkey";
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedGlobalWhitelistedTokens";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "mainAccount";
+            type: "pubkey";
+          },
+          {
+            name: "globalWhitelistedTokens";
+            type: {
+              vec: "pubkey";
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedMaxPerPayment";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
+          },
+          {
+            name: "maxPerPayment";
+            type: "u64";
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedPaymentCount";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
+          },
+          {
+            name: "paymentCount";
+            type: "u32";
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedSpendCap";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
+          },
+          {
+            name: "spendCap";
+            type: {
+              defined: {
+                name: "spendCap";
+              };
+            };
+          },
+          {
+            name: "lastResetTimestamp";
+            type: "u64";
+          },
+          {
+            name: "expendedBudget";
+            type: "u64";
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedSubAccountAllowance";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
+          },
+          {
+            name: "tokenMint";
+            type: "pubkey";
+          },
+          {
+            name: "amount";
+            type: "u64";
+          },
+          {
+            name: "updatedPaymentCount";
+            type: "u32";
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedWhitelistedPayees";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
           },
           {
             name: "whitelistedPayees";
             type: {
               vec: "pubkey";
             };
+          }
+        ];
+      };
+    },
+    {
+      name: "updatedWhitelistedTokens";
+      type: {
+        kind: "struct";
+        fields: [
+          {
+            name: "subAccount";
+            type: "pubkey";
           },
           {
             name: "whitelistedTokens";

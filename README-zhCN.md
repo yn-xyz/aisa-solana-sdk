@@ -1,6 +1,6 @@
 # AISA Solana SDK
 
-AISA Solana SDK是一个TypeScript库，用于与AISA（Automated Intelligent Spending Accounts）Solana智能合约进行交互。该SDK提供了一组API，允许应用程序创建和管理主账户和子账户，设置支付规则，处理授权支付等功能。
+AISA Solana SDK 是一个 TypeScript 库，用于与 AISA（Automated Intelligent Spending Accounts）Solana 智能合约进行交互。该 SDK 提供了一组 API，允许应用程序创建和管理主账户和子账户，设置支付规则，处理授权支付等功能。
 
 [English Documentation](./README.md)
 
@@ -11,7 +11,7 @@ AISA Solana SDK是一个TypeScript库，用于与AISA（Automated Intelligent Sp
 - 令牌白名单管理
 - 配置付款频率、金额和间隔
 - 增加和减少子账户授权额度
-- 支持SPL代币支付请求处理
+- 支持 SPL 代币支付请求处理
 
 ## 安装
 
@@ -51,13 +51,22 @@ const subAccountHandler = await SubAccountTxHandler.initialize();
 // 创建主账户
 const uuid = [1, 2, 3, 4]; // 唯一标识符
 const globalPayeeWhitelist = ["收款人公钥1", "收款人公钥2"]; // 全局允许的收款人列表
-const txId = await mainAccountHandler.createMainAccount(uuid, globalPayeeWhitelist);
+const globalTokenWhitelist = ["代币公钥1", "代币公钥2"]; // 子账户允许的代币列表
+const txId = await mainAccountHandler.createMainAccount(
+  uuid,
+  globalPayeeWhitelist,
+  globalTokenWhitelist
+);
 
 // 查询主账户状态
 const [owner, whitelist] = await mainAccountHandler.getMainAccountState(uuid);
 
 // 更新主账户规则
-await mainAccountHandler.updateMainAccountRules(uuid, ["新收款人公钥1", "新收款人公钥2"]);
+await mainAccountHandler.updateMainAccountRules(
+  uuid,
+  globalPayeeWhitelist,
+  globalTokenWhitelist
+);
 ```
 
 ### 子账户操作示例
@@ -73,6 +82,15 @@ const maxPerPayment = new anchor.BN(1000000); // 每次支付的最大金额
 const paymentCount = 10; // 支付次数
 const paymentInterval = new anchor.BN(86400); // 支付间隔（秒）
 const allowanceAmount = new anchor.BN(10000000); // 初始授权金额
+const daily1MSpendCapUpdate = {
+  // 每日限额100万
+  limited: {
+    duration: 1,
+    unit: { day: {} },
+    amount: new BN(1000_000),
+  },
+};
+const noLimitSpendCap = { none: {} }; // 无限制支付上限
 
 await mainAccountHandler.createSubAccount(
   uuid,
@@ -81,7 +99,7 @@ await mainAccountHandler.createSubAccount(
   tokenWhitelist,
   maxPerPayment,
   paymentCount,
-  paymentInterval,
+  daily1MSpendCapUpdate,
   allowanceAmount,
   "代币公钥" // 可选参数
 );
@@ -102,6 +120,48 @@ await mainAccountHandler.decreaseAllowance(
   new anchor.BN(2000000), // 减少金额
   2, // 支付次数
   "代币公钥"
+);
+
+// 更新子账户规则
+const noLimitSpendCapUpdate = {
+  // 无限制支付上限
+  type: "spendCap",
+  value: { none: {} },
+};
+
+const daily1MSpendCapUpdate = {
+  // 每日限额100万
+  type: "spendCap",
+  value: {
+    limited: {
+      duration: 1,
+      unit: { day: {} },
+      amount: new anchor.BN(1000),
+    },
+  },
+};
+
+const spendCapAmountUpdate = {
+  // 更新支付金额上限
+  type: "amount",
+  value: new anchor.BN(1000),
+};
+
+const spendCapDurationUpdate = {
+  // 更新支付周期
+  type: "duration",
+  duration: 2,
+  unit: { week: {} },
+};
+
+await mainAccountHandler.updateSubAccountRules(
+  uuid,
+  agent,
+  ["收款人公钥"],
+  ["代币公钥"],
+  maxPerPayment,
+  paymentCount,
+  spendCapAmountUpdate
 );
 ```
 
@@ -143,4 +203,4 @@ const txId = await subAccountHandler.paymentRequest(
 
 ## 许可证
 
-ISC 
+ISC

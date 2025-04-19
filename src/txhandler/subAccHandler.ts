@@ -1,18 +1,18 @@
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
-import { deriveMainAccount, deriveSubAccount } from "../utils/common";
+import { deriveMainAccount, deriveSubAccount, SpendCap } from "../utils/common";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { BaseAisaTxHandler } from "./handlerBase";
-import * as dotenv from "dotenv";
-import * as path from "path";
 
-const idlPath = path.join(__dirname, "../utils/aisa_contracts.json");
 export class SubAccountTxHandler extends BaseAisaTxHandler {
-  public static async initialize(handler?: SubAccountTxHandler, options?: { keyPair?: anchor.web3.Keypair }): Promise<SubAccountTxHandler> {
+  public static async initialize(
+    handler?: SubAccountTxHandler,
+    options?: { keyPair?: anchor.web3.Keypair }
+  ): Promise<SubAccountTxHandler> {
     // Create a new instance of this class
     const handler_instance = handler || new SubAccountTxHandler();
     // Initialize the base class properties by passing the instance
@@ -22,8 +22,12 @@ export class SubAccountTxHandler extends BaseAisaTxHandler {
   }
 
   // Convenience method to initialize with a keypair
-  public static async initializeWithKeypair(keypair: anchor.web3.Keypair): Promise<SubAccountTxHandler> {
-    return await SubAccountTxHandler.initialize(undefined, { keyPair: keypair });
+  public static async initializeWithKeypair(
+    keypair: anchor.web3.Keypair
+  ): Promise<SubAccountTxHandler> {
+    return await SubAccountTxHandler.initialize(undefined, {
+      keyPair: keypair,
+    });
   }
 
   //to be called by agent
@@ -43,10 +47,11 @@ export class SubAccountTxHandler extends BaseAisaTxHandler {
     [
       whitelistedPayees: Array<PublicKey>,
       whitelistedTokens: Array<PublicKey>,
-      paymentInterval: anchor.BN,
       paymentCount: number,
       maxPerPayment: anchor.BN,
-      lastPaymentTimestamp: anchor.BN
+      spendCap: SpendCap,
+      lastResetTimestamp: anchor.BN,
+      expendedBudget: anchor.BN
     ]
   > {
     let mainAccount = deriveMainAccount(Uint8Array.from(uuid));
@@ -56,10 +61,11 @@ export class SubAccountTxHandler extends BaseAisaTxHandler {
     return [
       subAccountState.whitelistedPayees,
       subAccountState.whitelistedTokens,
-      subAccountState.paymentInterval,
       subAccountState.paymentCount,
       subAccountState.maxPerPayment,
-      subAccountState.lastPaymentTimestamp,
+      subAccountState.spendCap,
+      subAccountState.lastResetTimestamp,
+      subAccountState.expendedBudget,
     ];
   }
 
